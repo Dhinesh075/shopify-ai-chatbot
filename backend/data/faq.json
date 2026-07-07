@@ -1,0 +1,22 @@
+[
+  {
+    "question": "What is your return policy?",
+    "answer": "You can return products within 30 days of delivery if they are unused and in their original packaging."
+  },
+  {
+    "question": "How long does shipping take?",
+    "answer": "Shipping usually takes 3–7 business days."
+  },
+  {
+    "question": "Do you offer cash on delivery?",
+    "answer": "Yes, Cash on Delivery is available for selected locations."
+  },
+  {
+    "question": "How can I contact support?",
+    "answer": "You can contact us at support@yourstore.com."
+  },
+  {
+    "question": "Do you ship internationally?",
+    "answer": "Yes, we ship to most countries worldwide."
+  }
+]
