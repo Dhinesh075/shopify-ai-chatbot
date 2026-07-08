@@ -4,6 +4,7 @@ import { getAIResponse } from "./aiService.js";
 import { getFAQAnswer } from "./faqService.js";
 import { compareProducts } from "./compareService.js";
 import { salesAssistant } from "./salesAssistantService.js";
+import { getProductDetails } from "./productDetailsService.js";
 
 export async function askAI(message, history = []) {
 
@@ -324,6 +325,54 @@ Fulfillment: ${order.fulfillment_status || "Pending"}`
 
         };
 
+    }
+
+    const detailWords = [
+        "tell me about",
+        "details",
+        "describe",
+        "information about"
+    ];
+
+    const wantsDetails = detailWords.some(word =>
+        lower.includes(word)
+    );
+
+    if (wantsDetails) {
+
+        const productName = message
+            .replace("tell me about", "")
+            .replace("details of", "")
+            .replace("describe", "")
+            .replace("information about", "")
+            .trim();
+
+        const product = await getProductDetails(productName);
+
+        if (!product) {
+            return {
+                type: "text",
+                reply: "Sorry, I couldn't find that product."
+            };
+        }
+
+        return {
+            type: "text",
+            reply:
+    `📦 ${product.title}
+
+    💲 Price: $${product.variants?.[0]?.price}
+
+    🏷 Brand: ${product.vendor}
+
+    📂 Category: ${product.product_type}
+
+    ✅ Available: ${product.variants?.[0]?.available ? "Yes" : "No"}
+
+    📝 Description:
+
+    ${product.body_html.replace(/<[^>]+>/g, "")}`
+        };
     }
 
     // ===================================

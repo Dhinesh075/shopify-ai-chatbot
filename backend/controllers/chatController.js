@@ -29,7 +29,7 @@ export async function chat(req, res) {
         const history = getConversation(userId);
 
         // Send message + history to AI
-        const result = await askAI(message);
+        const result = await askAI(message, history);
 
         // Save bot reply
         if (result.reply) {
