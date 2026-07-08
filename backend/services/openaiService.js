@@ -9,41 +9,39 @@ import { filterProducts } from "../utils/filterProducts.js";
 
 export async function askAI(message, history = []) {
 
-    const lower = message.toLowerCase();
+  const lower = message.toLowerCase();
 
-    console.log("Message:", message);
-    console.log("History:", history);
+  console.log("Message:", message);
+  console.log("History:", history);
 
-    // ===================================
-    // AI Sales Assistant
-    // ===================================
+  // ===================================
+  // AI Sales Assistant
+  // ===================================
 
-    const recommendationWords = [
-        "recommend",
-        "suggest",
-        "best",
-        "comfortable",
-        "cheap",
-        "budget",
-        "running",
-        "walking",
-        "gym",
-        "gift",
-        "which",
-        "good for"
-    ];
+  const recommendationWords = [
+    "recommend",
+    "suggest",
+    "best",
+    "comfortable",
+    "cheap",
+    "budget",
+    "running",
+    "walking",
+    "gym",
+    "gift",
+    "which",
+    "good for"
+  ];
 
     const isRecommendation =
-        recommendationWords.some(word => lower.includes(word));
+      recommendationWords.some(word => lower.includes(word));
 
     if (isRecommendation) {
-
-        const reply = await salesAssistant(message, history);
-
-        return {
-            type: "text",
-            reply
-        };
+      const reply = await salesAssistant(message, history);
+      return {
+        type: "text",
+        reply
+      };
     }
 
     // ===================================
@@ -51,97 +49,95 @@ export async function askAI(message, history = []) {
     // ===================================
 
     const searchWords = [
-        "show",
-        "find",
-        "search",
-        "looking",
-        "need",
-        "buy"
+      "show",
+      "find",
+      "search",
+      "looking",
+      "need",
+      "buy"
     ];
 
-    const isSearch =
-        searchWords.some(word => lower.includes(word));
+    const isSearch = searchWords.some(word => lower.includes(word));
 
     if (isSearch) {
 
-        let keyword = lower
-            .replace("show", "")
-            .replace("find", "")
-            .replace("search", "")
-            .replace("looking for", "")
-            .replace("need", "")
-            .replace("buy", "")
-            .trim();
+      let keyword = lower
+        .replace("show", "")
+        .replace("find", "")
+        .replace("search", "")
+        .replace("looking for", "")
+        .replace("need", "")
+        .replace("buy", "")
+        .trim();
 
-        // Parse price filters from keyword
-        const filters = {};
+      // Parse price filters from keyword
+      const filters = {};
 
-        // Check for "under $XX" or "under XX"
-        const underMatch = keyword.match(/under\s*\$?(\d+(?:\.\d{2})?)/i);
-        if (underMatch) {
-            filters.maxPrice = parseFloat(underMatch[1]);
-            keyword = keyword.replace(/under\s*\$?\d+(?:\.\d{2})?/i, "").trim();
-            console.log(`💰 Max Price Filter: $${filters.maxPrice}`);
-        }
+      // Check for "under $XX" or "under XX"
+      const underMatch = keyword.match(/under\s*\$?(\d+(?:\.\d{2})?)/i);
+      if (underMatch) {
+        filters.maxPrice = parseFloat(underMatch[1]);
+        keyword = keyword.replace(/under\s*\$?\d+(?:\.\d{2})?/i, "").trim();
+        console.log(`💰 Max Price Filter: $${filters.maxPrice}`);
+      }
 
-        // Check for "over $XX" or "above $XX" (for minPrice if needed)
-        const overMatch = keyword.match(/(?:over|above)\s*\$?(\d+(?:\.\d{2})?)/i);
-        if (overMatch) {
-            filters.minPrice = parseFloat(overMatch[1]);
-            keyword = keyword.replace(/(?:over|above)\s*\$?\d+(?:\.\d{2})?/i, "").trim();
-            console.log(`💰 Min Price Filter: $${filters.minPrice}`);
-        }
+      // Check for "over $XX" or "above $XX" (for minPrice if needed)
+      const overMatch = keyword.match(/(?:over|above)\s*\$?(\d+(?:\.\d{2})?)/i);
+      if (overMatch) {
+        filters.minPrice = parseFloat(overMatch[1]);
+        keyword = keyword.replace(/(?:over|above)\s*\$?\d+(?:\.\d{2})?/i, "").trim();
+        console.log(`💰 Min Price Filter: $${filters.minPrice}`);
+      }
 
-        const isGenericAllProducts = [
-            "",
-            "products",
-            "product",
-            "all",
-            "all products"
-        ].includes(keyword);
+      const isGenericAllProducts = [
+        "",
+        "products",
+        "product",
+        "all",
+        "all products"
+      ].includes(keyword);
 
-        console.log(`🔎 Search Query - Keyword: "${keyword}", Generic: ${isGenericAllProducts}`);
+      console.log(`🔎 Search Query - Keyword: "${keyword}", Generic: ${isGenericAllProducts}`);
 
-        let products = isGenericAllProducts
-            ? await getProducts()
-            : await searchProducts(keyword);
+      let products = isGenericAllProducts
+        ? await getProducts()
+        : await searchProducts(keyword);
 
-        console.log(`📦 Products before filter: ${products.length}`);
+      console.log(`📦 Products before filter: ${products.length}`);
 
-        // Apply price filters
-        if (Object.keys(filters).length > 0) {
-            const beforeFilter = products.length;
-            products = filterProducts(products, filters);
-            console.log(`📦 Products after filter: ${products.length} (removed ${beforeFilter - products.length})`);
-        }
+      // Apply price filters
+      if (Object.keys(filters).length > 0) {
+        const beforeFilter = products.length;
+        products = filterProducts(products, filters);
+        console.log(`📦 Products after filter: ${products.length} (removed ${beforeFilter - products.length})`);
+      }
 
-        if (products.length === 0) {
-            console.log("⚠️ No products found matching criteria");
-            return {
-                type: "text",
-                reply: "Sorry, I couldn't find any matching products."
-            };
-        }
-
-        console.log(`✅ Returning ${products.length} products`);
-
+      if (products.length === 0) {
+        console.log("⚠️ No products found matching criteria");
         return {
-            type: "products",
-            products: products.map(product => ({
-                id: product.id,
-                variantId: product.variants?.[0]?.id || "",
-                title: product.title,
-                description: product.body_html || "",
-                vendor: product.vendor,
-                productType: product.product_type,
-                available: product.variants?.[0]?.available,
-                price: product.variants?.[0]?.price || "",
-                image: product.image?.src || "",
-                handle: product.handle,
-                url: `https://${process.env.SHOPIFY_STORE}.myshopify.com/products/${product.handle}`
-            }))
+          type: "text",
+          reply: "Sorry, I couldn't find any matching products."
         };
+      }
 
+      console.log(`✅ Returning ${products.length} products`);
+
+      return {
+        type: "products",
+        products: products.map(product => ({
+          id: product.id,
+          variantId: product.variants?.[0]?.id || "",
+          title: product.title,
+          description: product.body_html || "",
+          vendor: product.vendor,
+          productType: product.product_type,
+          available: product.variants?.[0]?.available,
+          price: product.variants?.[0]?.price || "",
+          image: product.image?.src || "",
+          handle: product.handle,
+          url: `https://${process.env.SHOPIFY_STORE}.myshopify.com/products/${product.handle}`
+        }))
+      };
     }
 
     // ===================================
