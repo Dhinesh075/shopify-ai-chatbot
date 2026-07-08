@@ -81,6 +81,7 @@ export async function askAI(message, history = []) {
         if (underMatch) {
             filters.maxPrice = parseFloat(underMatch[1]);
             keyword = keyword.replace(/under\s*\$?\d+(?:\.\d{2})?/i, "").trim();
+            console.log(`💰 Max Price Filter: $${filters.maxPrice}`);
         }
 
         // Check for "over $XX" or "above $XX" (for minPrice if needed)
@@ -88,6 +89,7 @@ export async function askAI(message, history = []) {
         if (overMatch) {
             filters.minPrice = parseFloat(overMatch[1]);
             keyword = keyword.replace(/(?:over|above)\s*\$?\d+(?:\.\d{2})?/i, "").trim();
+            console.log(`💰 Min Price Filter: $${filters.minPrice}`);
         }
 
         const isGenericAllProducts = [
@@ -98,21 +100,30 @@ export async function askAI(message, history = []) {
             "all products"
         ].includes(keyword);
 
+        console.log(`🔎 Search Query - Keyword: "${keyword}", Generic: ${isGenericAllProducts}`);
+
         let products = isGenericAllProducts
             ? await getProducts()
             : await searchProducts(keyword);
 
-        // Apply filters
+        console.log(`📦 Products before filter: ${products.length}`);
+
+        // Apply price filters
         if (Object.keys(filters).length > 0) {
+            const beforeFilter = products.length;
             products = filterProducts(products, filters);
+            console.log(`📦 Products after filter: ${products.length} (removed ${beforeFilter - products.length})`);
         }
 
         if (products.length === 0) {
+            console.log("⚠️ No products found matching criteria");
             return {
                 type: "text",
                 reply: "Sorry, I couldn't find any matching products."
             };
         }
+
+        console.log(`✅ Returning ${products.length} products`);
 
         return {
             type: "products",
