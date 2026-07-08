@@ -7,6 +7,9 @@ export function filterProducts(products, filters) {
         if (filters.maxPrice && price > filters.maxPrice)
             return false;
 
+        if (filters.minPrice && price < filters.minPrice)
+            return false;
+
         if (
             filters.vendor &&
             !product.vendor.toLowerCase().includes(filters.vendor.toLowerCase())

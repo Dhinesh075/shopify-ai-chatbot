@@ -5,6 +5,7 @@ import { getFAQAnswer } from "./faqService.js";
 import { compareProducts } from "./compareService.js";
 import { salesAssistant } from "./salesAssistantService.js";
 import { getProductDetails } from "./productDetailsService.js";
+import { filterProducts } from "../utils/filterProducts.js";
 
 export async function askAI(message, history = []) {
 
@@ -63,7 +64,7 @@ export async function askAI(message, history = []) {
 
     if (isSearch) {
 
-        const keyword = lower
+        let keyword = lower
             .replace("show", "")
             .replace("find", "")
             .replace("search", "")
@@ -71,6 +72,23 @@ export async function askAI(message, history = []) {
             .replace("need", "")
             .replace("buy", "")
             .trim();
+
+        // Parse price filters from keyword
+        const filters = {};
+
+        // Check for "under $XX" or "under XX"
+        const underMatch = keyword.match(/under\s*\$?(\d+(?:\.\d{2})?)/i);
+        if (underMatch) {
+            filters.maxPrice = parseFloat(underMatch[1]);
+            keyword = keyword.replace(/under\s*\$?\d+(?:\.\d{2})?/i, "").trim();
+        }
+
+        // Check for "over $XX" or "above $XX" (for minPrice if needed)
+        const overMatch = keyword.match(/(?:over|above)\s*\$?(\d+(?:\.\d{2})?)/i);
+        if (overMatch) {
+            filters.minPrice = parseFloat(overMatch[1]);
+            keyword = keyword.replace(/(?:over|above)\s*\$?\d+(?:\.\d{2})?/i, "").trim();
+        }
 
         const isGenericAllProducts = [
             "",
@@ -80,9 +98,14 @@ export async function askAI(message, history = []) {
             "all products"
         ].includes(keyword);
 
-        const products = isGenericAllProducts
+        let products = isGenericAllProducts
             ? await getProducts()
             : await searchProducts(keyword);
+
+        // Apply filters
+        if (Object.keys(filters).length > 0) {
+            products = filterProducts(products, filters);
+        }
 
         if (products.length === 0) {
             return {
