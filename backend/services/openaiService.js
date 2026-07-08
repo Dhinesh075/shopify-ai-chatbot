@@ -205,14 +205,10 @@ export async function askAI(message, history = []) {
         }
 
         return {
-
             type: "text",
-
             reply: `📦 Order ${order.name}
-
-Payment: ${order.financial_status}
-
-Fulfillment: ${order.fulfillment_status || "Pending"}`
+            Payment: ${order.financial_status}
+            Fulfillment: ${order.fulfillment_status || "Pending"}`
         };
 
     }
