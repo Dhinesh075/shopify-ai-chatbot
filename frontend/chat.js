@@ -64,6 +64,24 @@ localStorage.setItem(
    "chatHistory",
    chatBox.innerHTML
 );
+async function botReply(messages) {
+
+   for (const message of messages) {
+
+      chatBox.innerHTML += `
+      <div class="bot-message">
+         ${message}
+         <div class="time">${new Date().toLocaleTimeString()}</div>
+      </div>
+      `;
+
+      chatBox.scrollTop = chatBox.scrollHeight;
+
+      await new Promise(resolve => setTimeout(resolve, 700));
+   }
+
+   localStorage.setItem("chatHistory", chatBox.innerHTML);
+}
 
 async function sendMessage() {
 
@@ -77,11 +95,11 @@ async function sendMessage() {
 
    chatBox.innerHTML += `
 
-<div class="user-message">
-${message}
-</div>
+   <div class="user-message">
+   ${message}
+   </div>
 
-`;
+   `;
 
    input.value = "";
 
@@ -245,13 +263,24 @@ ${message}
                `;
             });
          }
-      } else {
-         chatBox.innerHTML += `
-         <div class="bot-message">
-             ${data.reply}
-             <div class="time">${new Date().toLocaleTimeString()}</div>
-         </div>
-         `;
+      } 
+      else {
+
+         if (Array.isArray(data.reply)) {
+
+            await botReply(data.reply);
+
+         } else {
+
+            chatBox.innerHTML += `
+            <div class="bot-message">
+               ${data.reply}
+               <div class="time">${new Date().toLocaleTimeString()}</div>
+            </div>
+            `;
+
+         }
+
       }
 
       localStorage.setItem("chatHistory", chatBox.innerHTML);

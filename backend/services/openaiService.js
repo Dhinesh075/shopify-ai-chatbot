@@ -14,6 +14,33 @@ export async function askAI(message, history = []) {
   console.log("Message:", message);
   console.log("History:", history);
 
+  // ===========================
+// Greeting
+// ===========================
+
+const greetings = [
+    "hi",
+    "hello",
+    "hey",
+    "good morning",
+    "good afternoon",
+    "good evening"
+];
+
+if (greetings.includes(lower.trim())) {
+    return {
+        type: "text",
+        reply: [
+            "👋 Hi! Welcome to our Shopify store.",
+            "I can help you find products.",
+            "I can recommend the best products.",
+            "I can compare two products.",
+            "I can track your order.",
+            "What are you looking for today?"
+        ]
+    };
+}
+
   // ===================================
   // AI Sales Assistant
   // ===================================
